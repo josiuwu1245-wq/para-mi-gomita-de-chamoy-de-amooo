@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Una carta solo para ti</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --noche:#1b1030; --ciruela:#4a2166; --rosa:#ff5d8f; --coral:#ff9a8b;
+  --oro:#ffd27a; --papel:#fff7f3; --tinta:#4a2a3a;
+  --mano:'Caveat',cursive; --texto:'Lora',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--noche);color:#fff;font-family:var(--texto);overflow-x:hidden}
+#fondo{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ---------- SOBRE DE ENTRADA ---------- */
+#intro{position:fixed;inset:0;z-index:50;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 40%,var(--ciruela),var(--noche) 70%);
+  transition:opacity 1.2s,visibility 1.2s}
+#intro.fuera{opacity:0;visibility:hidden}
+.intro-wrap{text-align:center}
+.intro-wrap p{font-family:var(--mano);font-size:30px;margin-top:70px;color:var(--oro);animation:parpadeo 2s infinite}
+.sobre{position:relative;width:min(300px,78vw);aspect-ratio:3/2;cursor:pointer;margin:90px auto 0;animation:flota 3s ease-in-out infinite}
+.sobre .cuerpo{position:absolute;inset:0;background:#e98aa8;border-radius:8px;box-shadow:0 20px 50px rgba(255,93,143,.35)}
+.sobre .carta{position:absolute;left:8%;right:8%;top:6%;height:82%;background:var(--papel);border-radius:6px;z-index:1;
+  display:grid;place-items:center;font-family:var(--mano);font-size:30px;color:#c2305f;transition:transform 1s .6s}
+.sobre .frente{position:absolute;inset:0;background:linear-gradient(160deg,#f7b3c8,#ef8fb0);border-radius:8px;z-index:2;
+  clip-path:polygon(0 0,50% 54%,100% 0,100% 100%,0 100%)}
+.sobre .tapa{position:absolute;left:0;right:0;top:0;height:54%;background:#ee86a8;z-index:3;
+  clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .7s,z-index 0s .35s}
+.sobre .sello{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;font-size:38px;
+  color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.3);animation:latido 1.2s infinite;transition:opacity .3s}
+.sobre.abierto{animation:none}
+.sobre.abierto .tapa{transform:rotateX(180deg);z-index:0}
+.sobre.abierto .carta{transform:translateY(-72%)}
+.sobre.abierto .sello{opacity:0}
+
+/* ---------- EXPLOSIÓN DE CORAZÓN ---------- */
+.intro-wrap{transition:opacity .6s,transform .6s}
+.intro-wrap.sale{opacity:0;transform:scale(.8)}
+#boom{position:fixed;left:50%;top:50%;font-size:40px;line-height:1;color:var(--rosa);opacity:0;
+  transform:translate(-50%,-50%) scale(0);text-shadow:0 0 30px var(--rosa),0 0 70px #ff2d6f;pointer-events:none}
+#boom.on{animation:boomCrece 1.6s ease-in-out forwards}
+#boom.fin{display:none}
+@keyframes boomCrece{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0)}
+  25%{opacity:1;transform:translate(-50%,-50%) scale(4)}
+  38%{transform:translate(-50%,-50%) scale(3.4)}
+  52%{transform:translate(-50%,-50%) scale(4.6)}
+  64%{transform:translate(-50%,-50%) scale(3.9)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(6.5)}}
+.frag{position:fixed;left:50%;top:50%;z-index:95;pointer-events:none;color:var(--rosa);
+  text-shadow:0 0 12px var(--rosa);animation:salta 1.5s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes salta{
+  from{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:1}
+  to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3) rotate(var(--r));opacity:0}}
+.onda{position:fixed;left:50%;top:50%;width:20px;height:20px;border:5px solid var(--rosa);border-radius:50%;
+  z-index:94;pointer-events:none;transform:translate(-50%,-50%);animation:onda 1.1s ease-out forwards}
+@keyframes onda{to{width:150vmax;height:150vmax;opacity:0;border-width:1px}}
+#destello{position:fixed;inset:0;z-index:96;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,#fff 0,#ff8fb4 35%,transparent 70%);animation:destello 1s ease-out forwards}
+@keyframes destello{0%{opacity:0}15%{opacity:.95}100%{opacity:0}}
+
+/* ---------- PÁGINA ---------- */
+main{position:relative;z-index:2;opacity:0;transition:opacity 1.5s}
+body.leida main{opacity:1}
+section{padding:90px 22px;max-width:760px;margin:0 auto;text-align:center}
+
+/* Portada */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.hero h1{font-family:var(--mano);font-weight:700;font-size:clamp(70px,19vw,170px);line-height:1;
+  background:linear-gradient(90deg,var(--rosa),var(--oro),var(--rosa));background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:brillo 5s linear infinite}
+.hero h1 span{display:inline-block;opacity:0;transform:translateY(-80px) rotate(-12deg)}
+body.leida .hero h1 span{animation:cae .9s cubic-bezier(.3,1.5,.5,1) forwards}
+.hero .corazon{font-size:60px;margin:6px 0 18px;color:var(--rosa);animation:latido 1.2s infinite;filter:drop-shadow(0 0 18px var(--rosa))}
+#maquina{font-family:var(--mano);font-size:clamp(24px,5vw,34px);color:#ffd9e4;min-height:44px}
+#maquina::after{content:'|';animation:parpadeo .8s infinite}
+.baja{margin-top:60px;font-size:28px;color:var(--oro);animation:rebota 1.6s infinite;text-decoration:none}
+
+/* Carta */
+.papel{background:var(--papel);color:var(--tinta);text-align:left;padding:clamp(28px,6vw,64px);border-radius:6px;
+  box-shadow:0 30px 80px rgba(0,0,0,.45);position:relative;transform:rotate(-.6deg)}
+.papel::before{content:'';position:absolute;inset:0;border-radius:6px;pointer-events:none;
+  background:repeating-linear-gradient(transparent 0 34px,rgba(255,93,143,.12) 34px 35px)}
+.papel h2{font-family:var(--mano);font-size:44px;color:#c2305f;margin-bottom:22px;position:relative}
+.papel p{font-size:clamp(17px,2.4vw,20px);line-height:1.9;margin-bottom:22px;position:relative;max-width:62ch}
+.papel p:first-of-type::first-letter{font-family:var(--mano);font-size:3.2em;float:left;line-height:.8;padding:6px 8px 0 0;color:#c2305f}
+.papel em{color:#c2305f;font-style:italic;background:linear-gradient(transparent 62%,rgba(255,210,122,.65) 0);}
+.firma{font-family:var(--mano);font-size:42px;color:#c2305f;text-align:right;position:relative;margin-top:30px}
+
+/* Revelado al hacer scroll */
+.rev{opacity:0;filter:blur(8px);transform:translateY(24px);transition:opacity 1s,filter 1s,transform 1s}
+.rev.visible{opacity:1;filter:blur(0);transform:none}
+
+/* Tiempo juntos */
+.tiempo h2,.cosas h2,.pregunta h2{font-family:var(--mano);font-size:clamp(38px,8vw,60px);margin-bottom:30px;color:var(--oro)}
+.contador{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.contador div{padding:22px 6px;border:2px solid rgba(255,93,143,.5);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  background:rgba(255,93,143,.08);box-shadow:0 0 25px rgba(255,93,143,.2)}
+.contador b{display:block;font-family:var(--mano);font-size:clamp(34px,8vw,58px);color:var(--rosa);animation:latido 2s infinite}
+.contador small{font-size:14px;color:#ffd9e4}
+.tiempo p{margin-top:26px;font-size:18px;line-height:1.7;color:#ffe3ec}
+
+/* Papelitos */
+.notas{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.nota{width:min(210px,44%);padding:22px 16px;font-family:var(--mano);font-size:25px;line-height:1.2;color:#3a2030;
+  border-radius:3px;box-shadow:0 10px 25px rgba(0,0,0,.35);transition:transform .35s}
+.nota:nth-child(1){background:#ffc8d8;transform:rotate(-4deg)}
+.nota:nth-child(2){background:#ffe7a8;transform:rotate(3deg)}
+.nota:nth-child(3){background:#dccaff;transform:rotate(-2deg)}
+.nota:nth-child(4){background:#ffd1b8;transform:rotate(4deg)}
+.nota:nth-child(5){background:#c9f0e4;transform:rotate(-3deg)}
+.nota:nth-child(6){background:#ffc8d8;transform:rotate(2deg)}
+.nota:hover{transform:rotate(0) scale(1.1);z-index:5}
+
+/* Pregunta final */
+.pregunta p{font-size:20px;line-height:1.8;color:#ffe3ec;margin-bottom:34px}
+.botones{display:flex;gap:26px;justify-content:center;align-items:center;min-height:140px}
+button{font-family:var(--mano);font-size:30px;border:none;border-radius:50px;padding:12px 38px;cursor:pointer;color:#fff;transition:transform .35s}
+#si{background:linear-gradient(135deg,var(--rosa),#ff7ab0);box-shadow:0 0 30px rgba(255,93,143,.6);animation:latido 1.4s infinite}
+#no{background:#5b4a73}
+#final{display:none;margin-top:10px}
+#final.on{display:block;animation:aparece 1.4s forwards}
+#final h3{font-family:var(--mano);font-size:clamp(40px,9vw,70px);color:var(--rosa);margin-bottom:14px}
+#final p{margin:0 auto;max-width:48ch}
+.pie{padding:40px 20px 70px;font-family:var(--mano);font-size:26px;color:#c9a7d8;text-align:center}
+
+/* Efectos sueltos */
+.rastro{position:fixed;z-index:80;pointer-events:none;color:var(--rosa);font-size:18px;transform:translate(-50%,-50%);animation:sube 1.2s forwards}
+.conf{position:fixed;z-index:90;pointer-events:none;animation:vuela 2.6s ease-out forwards}
+
+#sonido{position:fixed;top:14px;right:14px;z-index:120;width:46px;height:46px;padding:0;font-size:22px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,93,143,.6);backdrop-filter:blur(6px);color:#fff}
+
+/* ---------- RECOMPENSAS ---------- */
+.premio-titulo{font-family:var(--mano);font-size:36px;color:var(--oro);margin:36px 0 18px}
+.premios{position:relative;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;min-height:220px}
+.premio{font-family:var(--mano);font-size:26px;line-height:1.1;padding:16px 22px;border-radius:18px;max-width:250px;
+  background:rgba(255,255,255,.1);border:2px solid rgba(255,93,143,.6);color:#fff;height:fit-content}
+.premio:hover{background:rgba(255,93,143,.3);transform:scale(1.06)}
+#dos{transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+
+#notas{position:fixed;left:0;right:0;bottom:7vh;z-index:100;display:flex;flex-direction:column;align-items:center;
+  gap:16px;pointer-events:none;padding:0 16px}
+.notita{background:#ffe7a8;color:#3a2030;font-family:var(--mano);font-size:clamp(26px,6vw,38px);line-height:1.15;
+  padding:18px 26px;border-radius:4px;box-shadow:0 14px 40px rgba(0,0,0,.55);max-width:520px;text-align:center;
+  transform:rotate(-2deg);animation:notita .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes notita{from{opacity:0;transform:scale(.4) rotate(8deg)}to{opacity:1;transform:rotate(-2deg)}}
+#centro{position:fixed;inset:0;z-index:130;display:grid;place-items:center;background:var(--noche);animation:fadeC 1.2s both}
+@keyframes fadeC{from{opacity:0}to{opacity:1}}
+#otra{font-size:clamp(52px,13vw,120px);background:none;padding:10px 20px;color:var(--rosa);
+  text-shadow:0 0 30px rgba(255,93,143,.7);animation:latido 1.6s infinite}
+#otra:hover{color:var(--oro)}
+.premio.usado{opacity:.4;pointer-events:none;filter:grayscale(.6)}
+.premios.bloq{pointer-events:none}
+#mega p{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;padding:0 18px;
+  font-family:var(--mano);font-weight:700;font-size:clamp(46px,12vw,110px);line-height:1.05;color:#8a1040;
+  text-shadow:0 0 24px #fff,0 0 8px #fff;opacity:0;animation:popUps .8s 1s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes popUps{from{opacity:0;transform:translateY(-50%) scale(.3)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+
+/* Robux */
+.rbx{position:fixed;top:-60px;z-index:90;pointer-events:none;width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#fff6b0,#ffc400 55%,#c98a00);border:3px solid #ffe066;
+  color:#7a4a00;font:700 15px/34px var(--texto);text-align:center;box-shadow:0 0 14px #ffd23a;
+  animation:lluvia var(--t) linear forwards}
+@keyframes lluvia{to{transform:translateY(115vh) rotateY(var(--g))}}
+#robuxTotal{position:fixed;left:50%;top:36%;z-index:91;pointer-events:none;white-space:nowrap;
+  font-family:var(--texto);font-weight:500;font-size:clamp(38px,11vw,88px);color:#ffd23a;
+  text-shadow:0 0 30px #ffb300,0 4px 0 #8a5a00;transform:translate(-50%,-50%);animation:popRb .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes popRb{from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)}}
+
+/* Sopa */
+#escena{position:fixed;left:50%;top:36%;z-index:91;transform:translate(-50%,-50%);pointer-events:none;
+  font-size:clamp(100px,28vw,200px);line-height:1;text-align:center;white-space:nowrap}
+.sopa{display:inline-block;animation:cocina .5s infinite alternate}
+.sopa.tiembla{animation:tiembla .07s infinite}
+.sopa.quemada{animation:none;filter:grayscale(1) brightness(.3) contrast(1.4)}
+.olla{position:relative;display:inline-block}
+.llama{position:absolute;left:50%;top:-22%;font-size:.55em;transform:translateX(-50%);animation:llama .3s infinite alternate}
+.humo{position:absolute;left:50%;top:-35%;font-size:.5em;animation:humo 1.6s infinite}
+.jugo{display:inline-block;margin-left:.15em;animation:popJ .7s cubic-bezier(.3,1.6,.5,1) both}
+.naranja{position:fixed;top:-60px;z-index:90;font-size:38px;pointer-events:none;animation:lluvia var(--t) linear forwards}
+@keyframes cocina{from{transform:rotate(-6deg)}to{transform:rotate(6deg) translateY(-6px)}}
+@keyframes tiembla{from{transform:translate(-7px,2px) rotate(-5deg) scale(1.1)}to{transform:translate(7px,-2px) rotate(5deg) scale(1.1)}}
+@keyframes llama{to{transform:translateX(-50%) scale(1.25) rotate(7deg)}}
+@keyframes humo{from{transform:translate(-50%,0);opacity:.9}to{transform:translate(-50%,-90px) scale(1.7);opacity:0}}
+@keyframes popJ{from{transform:scale(0) rotate(-40deg)}to{transform:scale(1)}}
+
+/* Besos y agujero negro */
+.beso{position:fixed;z-index:60;pointer-events:none;animation:popBeso .5s cubic-bezier(.3,1.6,.5,1) both}
+.beso.succ{animation:succion 1.5s cubic-bezier(.6,0,1,.5) forwards}
+@keyframes popBeso{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0)}}
+@keyframes succion{from{transform:translate(0,0) scale(1) rotate(0)}
+  to{transform:translate(var(--dx),var(--dy)) scale(0) rotate(900deg);opacity:0}}
+#hoyo{position:fixed;left:50%;top:50%;z-index:97;pointer-events:none;border-radius:50%;background:#000;
+  width:10px;height:10px;transform:translate(-50%,-50%);
+  box-shadow:0 0 40px 15px #b300ff,0 0 110px 45px rgba(255,93,143,.7);animation:hoyoCrece 3.4s ease-in forwards}
+#hoyo::before{content:'';position:absolute;inset:-40%;border-radius:50%;z-index:-1;
+  background:conic-gradient(from 0deg,transparent,#ff5d8f,#b300ff,transparent 70%);animation:gira 1s linear infinite;
+  -webkit-mask:radial-gradient(circle,transparent 40%,#000 44%,#000 66%,transparent 70%);
+  mask:radial-gradient(circle,transparent 40%,#000 44%,#000 66%,transparent 70%)}
+@keyframes hoyoCrece{0%{width:10px;height:10px}35%{width:28vmin;height:28vmin}70%{width:46vmin;height:46vmin}100%{width:240vmax;height:240vmax}}
+@keyframes gira{to{transform:rotate(360deg)}}
+#mega{position:fixed;inset:0;z-index:99;pointer-events:none;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle,#fff 0,#ff8fb4 25%,#ff2d6f 60%,#7a0a3a 100%);
+  animation:megaIn 1.4s cubic-bezier(.2,.8,.2,1) forwards}
+#mega span{font-size:110vmin;line-height:1;color:#fff;text-shadow:0 0 60px #ff2d6f;
+  animation:megaHeart 1.4s cubic-bezier(.2,.8,.2,1) forwards,latido 1.1s 1.4s infinite}
+@keyframes megaIn{from{clip-path:circle(0% at 50% 50%)}to{clip-path:circle(150% at 50% 50%)}}
+@keyframes megaHeart{from{transform:scale(0)}to{transform:scale(1)}}
+
+@keyframes flota{50%{transform:translateY(-12px)}}
+@keyframes latido{0%,100%{transform:scale(1)}15%{transform:scale(1.22)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.sobre .sello{animation-name:latidoSello}
+@keyframes latidoSello{0%,100%{transform:translate(-50%,-50%) scale(1)}20%{transform:translate(-50%,-50%) scale(1.3)}}
+@keyframes parpadeo{50%{opacity:.25}}
+@keyframes cae{to{opacity:1;transform:none}}
+@keyframes brillo{to{background-position:200% center}}
+@keyframes rebota{50%{transform:translateY(14px)}}
+@keyframes sube{to{transform:translate(-50%,-90px) scale(.3);opacity:0}}
+@keyframes aparece{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes vuela{0%{transform:translate(0,0) rotate(0)}
+  40%{transform:translate(var(--dx),var(--dy)) rotate(180deg)}
+  100%{transform:translate(var(--dx),calc(var(--dy) + 420px)) rotate(400deg);opacity:0}}
+
+@media (max-width:520px){.contador{grid-template-columns:repeat(2,1fr)}.botones{flex-direction:column}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+
+<canvas id="fondo"></canvas>
+<button id="sonido" aria-label="Activar o silenciar el sonido">🔊</button>
+
+<!-- SOBRE -->
+<div id="intro">
+  <div class="intro-wrap">
+    <div class="sobre" id="sobre" role="button" tabindex="0" aria-label="Abrir la carta">
+      <div class="cuerpo"></div>
+      <div class="carta">Para<span class="para"></span> 💌</div>
+      <div class="frente"></div>
+      <div class="tapa"></div>
+      <div class="sello">♥</div>
+    </div>
+    <p>amor milaap lo kie hize pala ti tócalo</p>
+  </div>
+  <div id="boom">♥</div>
+</div>
+
+<main>
+  <!-- PORTADA -->
+  <section class="hero">
+    <h1 id="titulo" aria-label="Para mi bb">Para niña tikitita</h1>
+    <div class="corazon">♥</div>
+    <div id="maquina"></div>
+    <a class="baja" href="#carta" aria-label="Bajar a la carta">⌄</a>
+  </section>
+
+  <!-- CARTA -->
+  <section id="carta">
+    <article class="papel">
+      <h2 class="rev">oña, <span class="para"></span>:</h2>
+
+      <p class="rev">Mi bebitaaa oña cariño mi amortita de veldad nio te imaginas cuanto te amooo y lo muto kie significas para mii a veces kisiera poder explicarte todo lo kie siento pero ni con mil palabras podria hacerlop me encantassh mutisisisisismo cariño sos la mejor kiero todo contigo nio me dejes nunca kie me mato perdon por todo lo kie hize te amoooo nunca jamas volvere a hacer algo parecido nio kiero hacerle daño y lastimar ami bb te amo muto muto </p>
+
+      <p class="rev">¿Sabes qué es lo más kaka kie pensaba que antes de ti yo pensaba que ya sabía lo que era ser feliz Y luego llegaste tú entre tantas personas eres tu con la kie kiero compartir mis dias nio sabes lo muto kie me importash amo todo y  esa forma tuya de hacer que hasta lunes de kaka  cualquiera se sienta como un <em>sabado en la tarde uwu nio sabes lo muto kie me importas eres y siempre seras mi persona favorita te amo muto </em>.</p>
+
+      <p class="rev">nio te amo por tu fisico y como te vez claro kie estas re buena mami me encantan tus hermosas tetash tu hermoso cuerpo me enloquese kelo hacerlo mio recorer cada parte y hacerlo mio kiero hacerte sentir mucho placer y fusionar nuestros cuerpos pero dejando eso te amo por la persona kie soi contigo puedo ser yo mismo sin forzar nada encanta cómo me haces sentir Me encantan tus ataques de cariño kiero ser vicitma de todos kiero estar contigo en las buenas y malash kiero crecer y correguir y aprender de mis errores </p>
+
+      <p class="rev">Contigo no tengo que fingir nada Puedo ser yo con mis miedos mis chistes kaka  y aun así me haces sentir que soy suficiente kiero hacerte senir amada como tu me haces sentir amado y nunca tengas que preguntar si de veldad te amo mi niña eres demaciado importante para mi mas de lo kie te imaginas massh de lo kie puedo expresar eres tan increible tan pro uwu tu amor para <em>no tiene precio y nunca jamas volvere a cometer el mismi errorny nunca mas de cambiaria por alguien mas en el futuro</em>.</p>
+
+      <p class="rev">A veces hasta me da miedo lo mucho que te amo ,te amo con todo mi corazon de pollo y shi algo se esk kiero seguir estando a tu lado seguir conociendote y seguir enamorandome de ti cada dia mash en serio polk si algún día me faltaras no sé kie hare a  quién le voi a decir como me regañan a kien le contare mis problemash y todo lo ke me pasha kiero ser unicamente tuyo de nadie mash solo tuyo mi niña pechocha</p>
+
+      <p class="rev">Gracias por quedarte conmigo mi vida no sabes lo feliz que me hace poder decir que eres mi novia mi niña preciosa te re amoooo demaciado mi amorr kasate conmigo y tengamos ijos y mutos gatitosh tii gracias por jugar conmigo robloxz gracias por sacar una version de mi kie ni conocia te amo mi amor por ti es sincero y desde lo mas profundo de mi corazon Gracias por ser <em>mi lugar favorito en el mundo</em>.</p>
+
+      <p class="rev">No te prometo que todo vaya a ser perfecto porque nadie puede Pero sí te prometo que voy a elegirte todos los días hasta en los días difíciles aunque me trates mal dhgadahduahd siempre estare contigo mi niña sabes polk polk eres mi todo eres mi vida eres mi amor siempre lo serashh vdd nio me dejes nunca mi amor te amooooooo te amo tanto polk contigo descubri muchas cosas nuevas sacaste versiones de mi kie ni yo sbai kie exitian mi calabazita ojala algun dia podamos a estar juntos dandonos muchos abrazos y beshitosshshsh uwuwuwuwuwuw como kisiera poder vertea los ojos aunque fuera por un momento para kie vez que te veo con muto amor para kie entendieras polk me gistas tanto y polk mi corazon de kiere de esta manera tan bonita pero mas bonita estas tu mi amor nunca digas kie sos fea polk a mis ojos eres la niña mas bonita del mundo uwuwu te amo mutisisisisismo mi gomita de chamoy</p>
+
+      <p class="rev">Te quiero muchísimo. <em>Más que ayer y menos que mañana perdon por decirte cosas hormonales a esta carta shi nio guta ya no lo hago solo kiero felicidad y kie te sientas comoda conmigo uwuwuw creo me fakto masg texto pero ni todo una biblia alcanzaria a descibir lo muto kie te amo mi bb tikititap ahhhhhhhhhhhhhhhh me enctashhhhh te adoroooo kasate conmigoooooooo eres tan increble estoi muy orgulloso de ti mi niña</em></p>
+
+      <div class="firma rev">Siempre tuyo a tus pies mami, <span class="de"></span> ♥</div>
+    </article>
+  </section>
+
+  <!-- CONTADOR -->
+  <section class="tiempo">
+    <h2 class="rev">Tiempo amandote</h2>
+    <div class="contador rev">
+      <div><b id="d">0</b><small>días</small></div>
+      <div><b id="h">0</b><small>horas</small></div>
+      <div><b id="m">0</b><small>minutos</small></div>
+      <div><b id="s">0</b><small>segundos</small></div>
+    </div>
+    <p class="rev">Y el contadol nio se detiene y yo tampoco pienso hacerlo quiero todo contigo.</p>
+  </section>
+
+  <!-- COSITAS -->
+  <section class="cosas">
+    <h2 class="rev">Cositas tuyas que me enamoran</h2>
+    <div class="notas">
+      <div class="nota rev">tus mensajes por que hasta los mas simples me hacen feliz</div>
+      <div class="nota rev">Cómo haces sentir ami colazon y tambien cuando me cuentas cosas de tu dia</div>
+      <div class="nota rev">Tus llamadas me encanta tu hermosa voz tu manera de expresarte cuando algo te emociona uwu</div>
+      <div class="nota rev">lo bonita kie eres nio me importa como estes siempre seeras la niña mas bonita para mi aunque digas kie nio para mi siempre lo seras</div>
+      <div class="nota rev">tus mensajes bonitos cuando me dices que me amas y me haces sentir lo mas bonito que es tenerte y cuando me dices wapo aunque no lo soi</div>
+      <div class="nota rev">tus ataques de cariño simplemete que seas tu por que no necesito que seas diferente para enamorarme de ti te amo tal como eres y tambien cuado te pones tierna awwwww me da un ataque de ternuera uwu creo me pase con las palabras pero ni esto expresa lo mucho kie te amo</div>
+    </div>
+  </section>
+
+  <!-- PREGUNTA -->
+  <section class="pregunta">
+    <h2 class="rev">Una última cosa…</h2>
+    <p class="rev">Después de todo lo que te dije, solo me falta preguntarte algo importante:<br><b>¿Me dejas seguir tu bebe tikitito?</b></p>
+    <div class="botones rev">
+      <button id="si">¡Sí! 💖</button>
+      <button id="no">No</button>
+    </div>
+    <div id="final">
+      <h3>¡Tiii, sabía que dirías que sí! 💗</h3>
+      <p>Gracias por elegirme a pesar de mis erorres prometo ser mejor novio cuidarte y amarte  hasta el final incluso despues de la muerte de amare. Te amo.</p>
+      <h4 class="premio-titulo" id="tPremio">Toma, elige tu recompensa 🎁</h4>
+      <div class="premios" id="premios">
+        <button class="premio" id="rb">💰 10k de Robux</button>
+        <button class="premio" id="sp">🍲 Sopa paraguaya + jugo de naranja + pastel</button>
+        <button class="premio" id="dos">✨ Los dos</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="pie">Hecho con todo mi amor desde mi colashon solo para tiiip perdon por todo mi niña me salio feo perdon weno espero te guste mamiii te amooooooooooooo ♥</div>
+</main>
+
+<div id="notas"></div>
+
+<script>
+/* ======== PERSONALIZA AQUÍ ======== */
+const PARA   = 'mi amor';                   // mi calabazita 
+const DE     = 'de tu bebito tikito';                 // joshi pro
+const TIEMPO = {dias:119, horas:6, min:20, seg:25}; // el contador arranca con este tiempo y sigue avanzando
+const FRASE  = 'Léelo con calma mi bebita lo hize con todo mi amorr';
+/* =================================== */
+
+document.querySelectorAll('.para').forEach(e=>e.textContent=PARA);
+document.querySelectorAll('.de').forEach(e=>e.textContent=DE);
+
+/* Fondo: corazones que suben y estrellas que titilan */
+const c=document.getElementById('fondo'),x=c.getContext('2d');
+let W,H;const parts=[];
+function size(){W=c.width=innerWidth;H=c.height=innerHeight}
+addEventListener('resize',size);size();
+function nuevo(ini){
+  const estrella=Math.random()<.45;
+  return{e:estrella,x:Math.random()*W,y:ini||estrella?Math.random()*H:H+30,
+    s:estrella?6+Math.random()*10:10+Math.random()*22,v:estrella?0:.3+Math.random()*.9,
+    o:.15+Math.random()*.35,d:Math.random()*6.28}
+}
+for(let i=0;i<85;i++)parts.push(nuevo(true));
+(function loop(){
+  x.clearRect(0,0,W,H);
+  for(const p of parts){
+    p.d+=.02;p.y-=p.v;
+    const px=p.x+(p.e?0:Math.sin(p.d)*22);
+    if(p.e){x.globalAlpha=.25+.75*Math.abs(Math.sin(p.d*2));x.fillStyle='#fff';
+      x.beginPath();x.arc(px,p.y,p.s/9,0,6.28);x.fill()}
+    else{x.globalAlpha=p.o;x.fillStyle='#ff5d8f';x.font=p.s+'px serif';x.fillText('♥',px,p.y);
+      if(p.y<-30)Object.assign(p,nuevo(false))}
+  }
+  requestAnimationFrame(loop)
+})();
+
+/* Título letra por letra */
+const t=document.getElementById('titulo');
+t.innerHTML=[...t.textContent].map((l,i)=>`<span style="animation-delay:${.4+i*.12}s">${l===' '?'&nbsp;':l}</span>`).join('');
+
+/* Máquina de escribir */
+function escribir(){
+  const el=document.getElementById('maquina');let i=0;
+  const id=setInterval(()=>{el.firstChild?el.firstChild.nodeValue=FRASE.slice(0,++i):el.prepend(FRASE.slice(0,++i));
+    if(i>=FRASE.length)clearInterval(id)},60);
+}
+
+/* ============ SONIDO (se genera con código, no necesita archivos) ============ */
+let AC=null,sal,reverb,musicaG,sfxG,silencio=false;
+function audioInit(){
+  if(AC){if(AC.state==='suspended')AC.resume();return}
+  const A=window.AudioContext||window.webkitAudioContext;if(!A)return;
+  AC=new A();
+  sal=AC.createGain();sal.gain.value=silencio?0:1;sal.connect(AC.destination);
+  // reverb suave para que todo suene "nostálgico"
+  const len=AC.sampleRate*3,buf=AC.createBuffer(2,len,AC.sampleRate);
+  for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5)}
+  reverb=AC.createConvolver();reverb.buffer=buf;
+  const rg=AC.createGain();rg.gain.value=.5;reverb.connect(rg);rg.connect(sal);
+  musicaG=AC.createGain();musicaG.gain.value=0;musicaG.connect(sal);musicaG.connect(reverb);
+  sfxG=AC.createGain();sfxG.gain.value=.8;sfxG.connect(sal);sfxG.connect(reverb);
+}
+function tono(f,t,dur,o={}){
+  const{tipo='sine',vol=.1,ata=.01,dest=sfxG,f2}=o;
+  const os=AC.createOscillator(),g=AC.createGain();
+  os.type=tipo;os.frequency.setValueAtTime(f,t);
+  if(f2)os.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+ata);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  os.connect(g);g.connect(dest);os.start(t);os.stop(t+dur+.05);
+}
+function ruido(t,dur,o={}){
+  const{vol=.3,f1=800,f2=800,tipo='lowpass',q=1,sube=false}=o;
+  const b=AC.createBuffer(1,Math.floor(AC.sampleRate*dur),AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const s=AC.createBufferSource();s.buffer=b;
+  const fl=AC.createBiquadFilter();fl.type=tipo;fl.Q.value=q;
+  fl.frequency.setValueAtTime(f1,t);fl.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  const g=AC.createGain();g.gain.setValueAtTime(sube?.0001:vol,t);
+  if(sube){g.gain.exponentialRampToValueAtTime(vol,t+dur*.92);g.gain.linearRampToValueAtTime(.0001,t+dur)}
+  else g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(fl);fl.connect(g);g.connect(sfxG);s.start(t);
+}
+const S={
+  tin(){if(!AC)return;const t=AC.currentTime;           // "tin tin"
+    [[1976,0],[2637,.14]].forEach(([f,d])=>{tono(f,t+d,1,{vol:.13,ata:.003});tono(f*2.76,t+d,.35,{vol:.04,ata:.003})})},
+  boing(){if(!AC)return;tono(280,AC.currentTime,.22,{vol:.14,f2:720})},
+  lubdub(){if(!AC)return;const t=AC.currentTime;           // latido
+    tono(120,t,.2,{vol:.55,f2:48});tono(95,t+.2,.22,{vol:.45,f2:42})},
+  coin(){if(!AC)return;const t=AC.currentTime;
+    tono(1568,t,.09,{tipo:'square',vol:.035,ata:.003});tono(2093,t+.08,.4,{tipo:'square',vol:.035,ata:.003})},
+  boom(grande){if(!AC)return;const t=AC.currentTime;       // explosión + chispitas
+    tono(170,t,.8,{vol:.7,ata:.005,f2:34});ruido(t,grande?1.8:1,{vol:.5,f1:3500,f2:120});
+    if(grande)tono(70,t,1.8,{vol:.8,ata:.005,f2:24});
+    for(let i=0;i<10;i++)tono(1100+Math.random()*2400,t+.06+i*.06,.6,{vol:.04,ata:.004})},
+  agujero(){if(!AC)return;const t=AC.currentTime;          // succión del agujero negro
+    tono(55,t,3.4,{tipo:'sawtooth',vol:.16,ata:1,f2:300});tono(90,t,3.4,{vol:.3,ata:1.2,f2:800});
+    ruido(t,3.4,{vol:.4,f1:150,f2:2800,tipo:'bandpass',q:2,sube:true})}
+};
+
+/* Música de fondo: cajita musical + pad suave, tranquila y nostálgica */
+const ACORDES=[
+  {b:130.81,p:[261.63,329.63,392,493.88],a:[523.25,659.25,783.99,987.77],m:[[0,1318.5],[1.5,1174.7],[2.5,1046.5]]},
+  {b:110,p:[220,261.63,329.63,392],a:[440,523.25,659.25,783.99],m:[[0,1046.5],[2,1318.5]]},
+  {b:87.31,p:[174.61,220,261.63,329.63],a:[440,523.25,659.25,698.46],m:[[0,1396.9],[1.5,1318.5],[3,1174.7]]},
+  {b:98,p:[196,246.94,293.66,392],a:[392,493.88,587.33,783.99],m:[[0,1174.7],[2,987.77],[3,1174.7]]}
+];
+const BEAT=60/64,BAR=BEAT*4,PAT=[0,2,1,3,2,1,3,2];
+let compas=0,proxT=0,timerMus=null;
+function tocarCompas(t,i){
+  const c=ACORDES[i];
+  tono(c.b,t,BAR*.9,{vol:.16,ata:.05,dest:musicaG});
+  c.p.forEach(f=>{tono(f,t,BAR+1.6,{vol:.03,ata:1.1,dest:musicaG});tono(f*1.004,t,BAR+1.6,{vol:.025,ata:1.1,dest:musicaG})});
+  PAT.forEach((n,k)=>{const ts=t+k*BEAT/2,f=c.a[n],v=.05+Math.random()*.03;
+    tono(f,ts,1.6,{tipo:'triangle',vol:v,ata:.006,dest:musicaG});
+    tono(f*2,ts,.5,{vol:v*.35,ata:.004,dest:musicaG})});
+  c.m.forEach(([b,f])=>tono(f,t+b*BEAT,2.2,{vol:.045,ata:.01,dest:musicaG}));
+}
+function planear(){while(proxT<AC.currentTime+2){tocarCompas(proxT,compas%4);proxT+=BAR;compas++}}
+function iniciarMusica(){
+  if(!AC||timerMus)return;
+  proxT=AC.currentTime+.3;planear();timerMus=setInterval(planear,800);
+  musicaG.gain.setValueAtTime(0,AC.currentTime);
+  musicaG.gain.linearRampToValueAtTime(.7,AC.currentTime+5);
+}
+const bSon=document.getElementById('sonido');
+bSon.addEventListener('click',()=>{
+  silencio=!silencio;bSon.textContent=silencio?'🔇':'🔊';
+  if(sal)sal.gain.setTargetAtTime(silencio?0:1,AC.currentTime,.08);
+});
+
+/* Abrir el sobre */
+const sobre=document.getElementById('sobre');
+function explotar(){
+  S.boom();
+  const boom=document.getElementById('boom');
+  boom.classList.remove('on');boom.classList.add('fin');
+  const f=document.createElement('div');f.id='destello';document.body.appendChild(f);
+  const o=document.createElement('div');o.className='onda';document.body.appendChild(o);
+  const caras=['♥','♥','♥','💖','💗','✨'];
+  for(let i=0;i<70;i++){
+    const s=document.createElement('span');s.className='frag';s.textContent=caras[i%caras.length];
+    const ang=Math.random()*6.283,dist=120+Math.random()*Math.max(innerWidth,innerHeight)*.6;
+    s.style.setProperty('--dx',Math.cos(ang)*dist+'px');
+    s.style.setProperty('--dy',Math.sin(ang)*dist+'px');
+    s.style.setProperty('--r',(Math.random()-.5)*720+'deg');
+    s.style.fontSize=14+Math.random()*34+'px';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1700);
+  }
+  setTimeout(()=>{f.remove();o.remove()},1300);
+}
+function abrir(){
+  if(sobre.classList.contains('abierto'))return;
+  sobre.classList.add('abierto');
+  audioInit();iniciarMusica();S.tin();
+  [2500,3050,3550].forEach(ms=>setTimeout(S.lubdub,ms)); // latidos del corazón antes de explotar
+  // 1) sale la cartita (hasta ~1.6s) 2) el sobre se va y aparece el corazón
+  setTimeout(()=>document.querySelector('.intro-wrap').classList.add('sale'),1900);
+  setTimeout(()=>document.getElementById('boom').classList.add('on'),2300);
+  // 3) el corazón explota
+  setTimeout(explotar,3900);
+  // 4) se revela la carta y el contador
+  setTimeout(()=>{document.getElementById('intro').classList.add('fuera');document.body.classList.add('leida');
+    setTimeout(escribir,1200)},4150);
+}
+sobre.addEventListener('click',abrir);
+sobre.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')abrir()});
+
+/* Revelar al hacer scroll */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}}),{threshold:.2});
+document.querySelectorAll('.rev').forEach((e,i)=>io.observe(e));
+
+/* Contador de tiempo */
+const BASE=(((TIEMPO.dias*24+TIEMPO.horas)*60+TIEMPO.min)*60+TIEMPO.seg)*1000;
+let t0=null; // el contador empieza a avanzar cuando lo ves en pantalla
+new IntersectionObserver(es=>{if(es[0].isIntersecting&&!t0)t0=Date.now()},{threshold:.5})
+  .observe(document.querySelector('.contador'));
+function tick(){
+  let s=Math.floor((BASE+(t0?Date.now()-t0:0))/1000);
+  const d=Math.floor(s/86400);s%=86400;
+  const h=Math.floor(s/3600);s%=3600;
+  const m=Math.floor(s/60);s%=60;
+  [['d',d],['h',h],['m',m],['s',s]].forEach(([id,v])=>document.getElementById(id).textContent=v);
+}
+tick();setInterval(tick,1000);
+
+/* Rastro de corazones al mover el mouse o el dedo */
+let ultimo=0;
+function rastro(e){
+  const n=Date.now();if(n-ultimo<70)return;ultimo=n;
+  const p=e.touches?e.touches[0]:e;
+  const s=document.createElement('span');s.className='rastro';s.textContent='♥';
+  s.style.left=p.clientX+'px';s.style.top=p.clientY+'px';
+  document.body.appendChild(s);setTimeout(()=>s.remove(),1200);
+}
+addEventListener('mousemove',rastro);
+addEventListener('touchmove',rastro,{passive:true});
+
+/* Botón "No" que huye y botón "Sí" que crece */
+const si=document.getElementById('si'),no=document.getElementById('no');
+const excusas=['No','¿Segura?','Piénsalo bien mi bb','di kie tii ','Mejor di que shii amorr','Anda, di que tii 🥺'];
+let veces=0;
+function huir(e){
+  if(e)e.preventDefault();
+  veces++;S.boing();
+  const ancho=Math.min(300,innerWidth-160);
+  no.style.transform=`translate(${(Math.random()-.5)*ancho}px,${(Math.random()-.5)*150}px)`;
+  no.textContent=excusas[Math.min(veces,excusas.length-1)];
+  si.style.scale=Math.min(1+veces*.1,1.9);
+}
+no.addEventListener('mouseenter',huir);
+no.addEventListener('touchstart',huir,{passive:false});
+no.addEventListener('click',huir);
+
+/* Confeti de corazones */
+function confeti(){
+  const caras=['♥','💖','✨','💗','💕'];
+  for(let i=0;i<80;i++){
+    const s=document.createElement('span');s.className='conf';s.textContent=caras[i%caras.length];
+    s.style.left='50%';s.style.top='65%';s.style.color='#ff5d8f';
+    s.style.fontSize=14+Math.random()*28+'px';
+    s.style.setProperty('--dx',(Math.random()-.5)*innerWidth+'px');
+    s.style.setProperty('--dy',-(80+Math.random()*innerHeight*.7)+'px');
+    s.style.animationDelay=Math.random()*.4+'s';
+    document.body.appendChild(s);setTimeout(()=>s.remove(),3200);
+  }
+}
+si.addEventListener('click',()=>{
+  document.querySelector('.botones').style.display='none';
+  document.getElementById('final').classList.add('on');
+  setTimeout(()=>document.getElementById('final').scrollIntoView({behavior:'smooth',block:'center'}),150);
+  S.tin();confeti();setTimeout(confeti,700);setTimeout(confeti,1400);
+});
+
+/* ================= RECOMPENSAS ================= */
+const notas=document.getElementById('notas');
+const premios=document.getElementById('premios'),tPremio=document.getElementById('tPremio');
+const esp=ms=>new Promise(r=>setTimeout(r,ms));
+function nota(t){notas.innerHTML='';const n=document.createElement('div');n.className='notita';n.textContent=t;notas.appendChild(n)}
+function elegido(){premios.style.display='none';tPremio.style.display='none'}
+function fin(){
+  const w=document.createElement('div');w.id='centro';
+  const b=document.createElement('button');b.id='otra';b.textContent='Leer de nuevo';
+  b.onclick=()=>location.reload();w.appendChild(b);document.body.appendChild(w);
+}
+/* Robux y sopa NO terminan la carta: se marcan como usadas y se puede seguir eligiendo */
+function usar(id){
+  const b=document.getElementById(id);b.classList.add('usado');b.textContent+=' ✔';
+  premios.classList.add('bloq');
+}
+function libre(){
+  premios.classList.remove('bloq');
+  const usadas=document.querySelectorAll('.premio.usado').length;
+  tPremio.textContent=usadas>=2?'Solo queda una… ¿los dosh? ':'¿Y las otras? Elige otra recompensa 🎁';
+  premios.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function estallido(caras,n,grande){
+  S.boom(grande);
+  const f=document.createElement('div');f.id='destello';document.body.appendChild(f);
+  const o=document.createElement('div');o.className='onda';document.body.appendChild(o);
+  for(let i=0;i<n;i++){
+    const s=document.createElement('span');s.className='frag';s.textContent=caras[i%caras.length];
+    const a=Math.random()*6.283,d=120+Math.random()*Math.max(innerWidth,innerHeight)*.6;
+    s.style.setProperty('--dx',Math.cos(a)*d+'px');s.style.setProperty('--dy',Math.sin(a)*d+'px');
+    s.style.setProperty('--r',(Math.random()-.5)*720+'deg');s.style.fontSize=18+Math.random()*40+'px';
+    document.body.appendChild(s);setTimeout(()=>s.remove(),1700);
+  }
+  setTimeout(()=>{f.remove();o.remove()},1300);
+}
+
+/* Opción 1: Robux */
+async function robux(){
+  usar('rb');
+  const n=document.createElement('div');n.id='robuxTotal';n.textContent='+0 R$';document.body.appendChild(n);
+  let v=0;
+  const id=setInterval(()=>{v=Math.min(10000,v+250);n.textContent='+'+v.toLocaleString('en-US')+' R$';if(v>=10000)clearInterval(id)},45);
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div');c.className='rbx';c.textContent='R$';
+    c.style.left=Math.random()*96+'vw';
+    c.style.setProperty('--t',2+Math.random()*2.2+'s');
+    c.style.setProperty('--g',Math.random()*720+'deg');
+    c.style.animationDelay=Math.random()*2+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),6500);
+  }
+  await esp(2600);nota('Oki mi amor, en 67 años de lo doy oteii');
+  await esp(3200);n.remove();notas.innerHTML='';libre();
+}
+
+/* Opción 2: Sopa paraguasha (explota y sale quemada) + jugo */
+async function sopa(){
+  usar('sp');nota('Tii, ahorita lo hago mi amorr 👩‍🍳');
+  const e=document.createElement('div');e.id='escena';e.innerHTML='<span class="sopa">🍲</span>';document.body.appendChild(e);
+  const olla=e.firstChild;
+  await esp(2200);olla.classList.add('tiembla');
+  await esp(1600);
+  estallido(['💥','🔥','🍲','💨'],60);
+  e.innerHTML='<span class="olla"><span class="sopa quemada">🍲</span><span class="llama">🔥</span><span class="humo">💨</span></span>';
+  await esp(2000);
+  nota('¡Upss…! entonces el jugitop uwu 🍊');
+  e.insertAdjacentHTML('beforeend','<span class="jugo">🧃</span>');
+  for(let i=0;i<26;i++){
+    const o=document.createElement('div');o.className='naranja';o.textContent='🍊';
+    o.style.left=Math.random()*96+'vw';
+    o.style.setProperty('--t',2+Math.random()*2+'s');
+    o.style.setProperty('--g',Math.random()*540+'deg');
+    o.style.animationDelay=Math.random()*1.5+'s';
+    document.body.appendChild(o);setTimeout(()=>o.remove(),5500);
+  }
+  await esp(3800);e.remove();notas.innerHTML='';libre();
+}
+
+/* Opción 3: "Los dos" (huye 3 veces) -> besos -> agujero negro */
+let esq=0,ultEsq=0;
+const dos=document.getElementById('dos');
+function esquivar(e){
+  if(e)e.preventDefault();
+  const n=Date.now();if(n-ultEsq<450||esq>=4)return;
+  ultEsq=n;esq++;
+  const w=Math.max(80,Math.min(premios.getBoundingClientRect().width-140,380));
+  dos.style.transform=`translate(${(Math.random()-.5)*w}px,${(Math.random()-.5)*170}px) rotate(${(Math.random()-.5)*30}deg)`;
+  if(esq===4)setTimeout(besos,1000);
+}
+dos.addEventListener('mouseenter',esquivar);
+dos.addEventListener('touchstart',esquivar,{passive:false});
+dos.addEventListener('click',esquivar);
+
+async function besos(){
+  elegido();S.tin();
+  nota('¡Ñooo! Mejor tu recompensa soi yio uwu te dale mutosh beshitosh');
+  const caras=['','😘','','😚','','😍'],kisses=[];
+  for(let i=0;i<30;i++){
+    for(let k=0;k<6;k++){
+      const s=document.createElement('span');s.className='beso';s.textContent=caras[(i+k)%caras.length];
+      const px=Math.random()*(innerWidth-40),py=Math.random()*(innerHeight-40);
+      s.style.left=px+'px';s.style.top=py+'px';s.style.fontSize=30+Math.random()*60+'px';
+      s.dataset.x=px;s.dataset.y=py;
+      document.body.appendChild(s);kisses.push(s);
+    }
+    await esp(90);
+  }
+  await esp(600);
+  nota('JAAJASAKJAKA te amo mutisimo me encantash mamii');
+  await esp(3200);
+  // agujero negro que se traga los besos
+  const h=document.createElement('div');h.id='hoyo';document.body.appendChild(h);
+  S.agujero();
+  kisses.forEach(s=>{
+    s.style.setProperty('--dx',innerWidth/2-s.dataset.x+'px');
+    s.style.setProperty('--dy',innerHeight/2-s.dataset.y+'px');
+    s.style.animationDelay=Math.random()*.9+'s';
+    s.classList.add('succ');
+  });
+  await esp(3400);
+  // BOOM: el agujero negro, ya enorme, explota y destruye la carta
+  kisses.forEach(s=>s.remove());notas.innerHTML='';
+  const m=document.createElement('div');m.id='mega';
+  m.innerHTML='<span>♥</span><p>¡Upss! Exceso de amor perdonn por lo de anoche mi amor 💥</p>';document.body.appendChild(m);
+  estallido(['♥','💖','💗','💥'],70,true);
+  const main=document.querySelector('main');
+  main.style.transition='opacity 1.4s,filter 1.4s,transform 1.4s';
+  main.style.opacity=0;main.style.filter='blur(14px)';main.style.transform='scale(1.25)';
+  document.getElementById('fondo').style.display='none';
+  setTimeout(()=>h.remove(),1500);
+  if(musicaG)musicaG.gain.setTargetAtTime(0,AC.currentTime,1.5);
+  await esp(4200);
+  m.style.transition='opacity 1.2s';m.style.opacity=0;
+  await esp(1200);
+  m.remove();main.remove();document.body.style.overflow='hidden';scrollTo(0,0);
+  fin();
+}
+
+document.getElementById('rb').addEventListener('click',()=>{
+  S.tin();
+  for(let i=0;i<18;i++)setTimeout(S.coin,300+Math.random()*2800); // sonido de monedas cayendo
+  robux();
+});
+document.getElementById('sp').addEventListener('click',()=>{S.tin();sopa()});
+</script>
+</body>
+</html>
